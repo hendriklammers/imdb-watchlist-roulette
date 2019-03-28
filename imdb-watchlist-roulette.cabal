@@ -21,4 +21,5 @@ executable imdb-watchlist-roulette
                        text,
                        cassava,
                        vector,
-                       bytestring
+                       bytestring,
+                       random
