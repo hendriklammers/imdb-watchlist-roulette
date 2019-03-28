@@ -10,6 +10,7 @@ import qualified Data.Text.Encoding as T
 import Data.Vector (Vector, (!))
 import qualified Data.Vector as V
 import System.Random
+import System.Environment
 
 -- Position,Const,Created,Modified,Description,Title,URL,Title Type,IMDb Rating,Runtime (mins),Year,Genres,Num Votes,Release Date,Directors,Your Rating,Date Rated
 data Movie = Movie
@@ -37,8 +38,14 @@ processCSV gen csv =
 randomMovie :: StdGen -> Vector Movie -> Movie
 randomMovie gen v = v ! fst (randomR (0, V.length v - 1) gen :: (Int, StdGen))
 
+-- Use WATCHLIST.csv as default when no file is provided
+file :: [String] -> String
+file [] = "WATCHLIST.csv"
+file (a:_) = a
+
 main :: IO ()
 main = do
+    args <- getArgs
     gen <- getStdGen
-    csv <- BL.readFile "watchlist.csv"
+    csv <- BL.readFile $ file args
     processCSV gen csv
