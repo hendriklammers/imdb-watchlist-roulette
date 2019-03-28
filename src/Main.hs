@@ -20,8 +20,10 @@ data Movie = Movie
 
 instance FromNamedRecord Movie where
     parseNamedRecord r =
-        Movie <$> fmap T.decodeLatin1 (r .: "Title") <*> r .: "Year" <*>
-        r .: "URL"
+        Movie
+            <$> fmap T.decodeLatin1 (r .: "Title")
+            <*> r .: "Year"
+            <*> r .: "URL"
 
 decodeItems :: ByteString -> Either String (Vector Movie)
 decodeItems = fmap snd . decodeByName
