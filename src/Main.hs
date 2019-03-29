@@ -6,7 +6,6 @@ import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv
 import Data.Text (Text)
-import Data.Maybe
 import Text.Read
 import qualified Data.Text.Encoding as T
 import Data.Vector (Vector, (!))
@@ -43,7 +42,7 @@ randomMovie gen v = v ! fst (randomR (0, V.length v - 1) gen :: (Int, StdGen))
 
 filterMovies :: Maybe Int -> Vector Movie -> Vector Movie
 filterMovies Nothing xs = xs
-filterMovies (Just t) xs = V.filter (\m -> fromMaybe 0 (runtime m) <= t) xs
+filterMovies (Just t) xs = V.filter (maybe False (<= t) . runtime) xs
 
 type Arguments = (String, Maybe Int)
 
