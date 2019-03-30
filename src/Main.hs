@@ -6,8 +6,9 @@ import Data.ByteString.Lazy (ByteString)
 import qualified Data.ByteString.Lazy as BL
 import Data.Csv
 import Data.Text (Text)
+import qualified Data.Text as T
 import Text.Read
-import qualified Data.Text.Encoding as T
+import qualified Data.Text.Encoding as TE
 import Data.Vector (Vector, (!))
 import qualified Data.Vector as V
 import System.Random
@@ -18,24 +19,22 @@ data Movie = Movie
     , year :: Int
     , url :: Text
     , runtime :: Maybe Int
-    } deriving (Show)
+    }
+
+instance Show Movie where
+    show m =
+        T.unpack (title m) ++ ", " ++ show (year m) ++ "\n" ++ T.unpack (url m)
 
 instance FromNamedRecord Movie where
-    parseNamedRecord r =
+    parseNamedRecord m =
         Movie
-            <$> fmap T.decodeLatin1 (r .: "Title")
-            <*> r .: "Year"
-            <*> r .: "URL"
-            <*> fmap readMaybe (r .: "Runtime (mins)")
+            <$> fmap TE.decodeLatin1 (m .: "Title")
+            <*> m .: "Year"
+            <*> m .: "URL"
+            <*> fmap readMaybe (m .: "Runtime (mins)")
 
 decodeItems :: ByteString -> Either String (Vector Movie)
 decodeItems = fmap snd . decodeByName
-
-processCSV :: StdGen -> Maybe Int -> ByteString -> IO ()
-processCSV gen time csv =
-    case randomMovie gen . filterMovies time <$> decodeItems csv of
-        Left err -> putStrLn err
-        Right m -> print m
 
 randomMovie :: StdGen -> Vector Movie -> Movie
 randomMovie gen v = v ! fst (randomR (0, V.length v - 1) gen :: (Int, StdGen))
@@ -59,4 +58,6 @@ main = do
     gen <- getStdGen
     let (file, time) = parseArguments args
     csv <- BL.readFile file
-    processCSV gen time csv
+    case randomMovie gen . filterMovies time <$> decodeItems csv of
+        Left err -> putStrLn err
+        Right m -> print m
